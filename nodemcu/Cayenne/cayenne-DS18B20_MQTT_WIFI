@@ -1,31 +1,37 @@
 // This example shows how to connect to Cayenne using a NodeMCU ESP8266 and send/receive sample data.
 // Created by J.CUADRADO <redbeard28>
-//
+/************************************************************************************************/
+/* For commercial use, please contact SARL REDBEARD-CONSULTING <https://redbeard-consulting.fr> */
+/************************************************************************************************/
 
-#define CAYENNE_DEBUG
+// Cayenne declaration
+//#define CAYENNE_DEBUG
 #define CAYENNE_PRINT Serial
-/*#include <CayenneMQTTWiFi.h>*/
 #include <CayenneMQTTESP8266.h>
+
 /********************************************************************/
-// First we include the libraries
+// First include the libraries
 #include <OneWire.h> 
 #include <DallasTemperature.h>
 /********************************************************************/
 // Data wire is plugged into pin D2 on the NodeMCU pinout
 #define ONE_WIRE_BUS D2 
+
 /********************************************************************/
 // Setup a oneWire instance to communicate with any OneWire devices  
 // (not just Maxim/Dallas temperature ICs) 
 OneWire oneWire(ONE_WIRE_BUS); 
+
 /********************************************************************/
 // Pass our oneWire reference to Dallas Temperature. 
 DallasTemperature sensors(&oneWire);
-/********************************************************************/ 
 
+/********************************************************************/ 
 // WiFi network info.
 char ssid[] = "ssid";
 char wifiPassword[] = "secret-wpa";
 
+/********************************************************************/
 // Cayenne authentication info. This should be obtained from the Cayenne Dashboard.
 char username[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 char password[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
@@ -33,6 +39,7 @@ char clientID[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 unsigned long lastMillis = 0;
 
+/********************************************************************/
 void setup() {
 	Serial.begin(115200);
   Serial.println("Dallas Temperature IC Control Library Demo"); 
@@ -41,6 +48,7 @@ void setup() {
 	Cayenne.begin(username, password, clientID, ssid, wifiPassword);
 }
 
+/********************************************************************/
 void loop() {
   float celsius;
 	Cayenne.loop();
@@ -48,20 +56,25 @@ void loop() {
 	//Publish data every 60 seconds (10000 milliseconds). Change this value to publish at a different interval.
 	if (millis() - lastMillis > 60000) {
 		lastMillis = millis();
+	
+	/*** DS18B20 Action ***/
     Serial.print(" Requesting temperatures..."); 
     Serial.print("Temp : ");
     sensors.requestTemperatures();
     celsius = sensors.getTempCByIndex(0);
-		//Write data to Cayenne here. This example just sends the current uptime in milliseconds.
-		//Cayenne.virtualWrite(0, lastMillis);
-		//Some examples of other functions you can use to send data.
-		Cayenne.celsiusWrite(1, celsius);
-		//Cayenne.luxWrite(2, 700);
-		//Cayenne.virtualWrite(3, 50, TYPE_PROXIMITY, UNIT_CENTIMETER);
+    
+    /*** Cayenne ***/
+	//Write data to Cayenne here. This example just sends the current uptime in milliseconds.
+	//Cayenne.virtualWrite(0, lastMillis);
+	//Some examples of other functions you can use to send data.
+	Cayenne.celsiusWrite(1, celsius);
+	//Cayenne.luxWrite(2, 700);
+	//Cayenne.virtualWrite(3, 50, TYPE_PROXIMITY, UNIT_CENTIMETER);
    Serial.println("DONE"); 
 	}
 }
 
+/********************************************************************/
 //Default function for processing actuator commands from the Cayenne Dashboard.
 //You can also use functions for specific channels, e.g CAYENNE_IN(1) for channel 1 commands.
 CAYENNE_IN_DEFAULT()
@@ -69,3 +82,5 @@ CAYENNE_IN_DEFAULT()
 	CAYENNE_LOG("CAYENNE_IN_DEFAULT(%u) - %s, %s", request.channel, getValue.getId(), getValue.asString());
 	//Process message here. If there is an error set an error message using getValue.setError(), e.g getValue.setError("Error message");
 }
+
+/********************* END OF FILE ***********************/
